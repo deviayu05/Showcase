@@ -103,7 +103,7 @@ if model is not None and vectorizer is not None:
     cleaned_text = ""
     
     with col1:
-        if st.button("Analisis Pesan", use_container_width=False, type="primary"):
+        if st.button("Analisis Pesan", use_container_width=True, type="primary"):
             if user_input:
                 # Lakukan prediksi
                 result, cleaned_text = predict_text(user_input, model, vectorizer, STEMMER, LIST_STOPWORDS)
@@ -129,5 +129,6 @@ if model is not None and vectorizer is not None:
 
 else:
     st.error("Aplikasi tidak dapat berjalan karena model atau vectorizer gagal dimuat. Cek file .joblib Anda.")
+
 
 
