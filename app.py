@@ -110,7 +110,7 @@ if model is not None and vectorizer is not None:
                 result, cleaned_text = predict_text(user_input, model, vectorizer, STEMMER, LIST_STOPWORDS)
                 
                 # Tampilkan hasil
-                st.subheader("Hasil Prediksi:", width=50)
+                st.subheader("Hasil Prediksi:")
                 
                 # Hasil 1 = Spam, Hasil 0 = Ham
                 if result == 1:
@@ -128,3 +128,4 @@ if model is not None and vectorizer is not None:
 else:
 
     st.error("Aplikasi tidak dapat berjalan karena model atau vectorizer gagal dimuat. Cek file .joblib Anda.")
+
