@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as app
 import joblib
 import re
 import string
@@ -10,11 +10,14 @@ from nltk.tokenize import word_tokenize
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 # --- 0. Konfigurasi Halaman Streamlit ---
-# Mengatur layout menjadi 'wide' (lebar) untuk memberikan ruang lebih pada elemen (termasuk st.code)
-st.set_page_config(page_title="Detektor Spam Bahasa Indonesia", layout="wide")
+app.set_page_config(
+    page_title="Detektor Teks Spam Bahasa Indonesia",
+    page_icon="https://plai.ac.id/assets/images/logo/MAIN-min.png",
+    layout="wide"
+)
 
 # --- 1. Muat Sumber Daya (Model, Vectorizer, NLTK, Stemmer) ---
-@st.cache_resource
+@app.cache_resource
 def load_resources():
     """
     Memuat model dan vectorizer, serta memastikan semua NLTK resources terunduh.
@@ -36,10 +39,10 @@ def load_resources():
         return model, vectorizer, list_stopwords, stemmer
     
     except FileNotFoundError:
-        st.error("❌ File model atau vectorizer (.joblib) tidak ditemukan! Pastikan file berada di direktori yang sama.")
+        app.error("❌ File model atau vectorizer (.joblib) tidak ditemukan! Pastikan file berada di direktori yang sama.")
         return None, None, set(), None
     except Exception as e:
-        st.error(f"❌ Gagal memuat sumber daya atau inisialisasi NLP: {e}")
+        app.error(f"❌ Gagal memuat sumber daya atau inisialisasi NLP: {e}")
         return None, None, set(), None
 
 # Panggil fungsi untuk memuat semua sumber daya
@@ -86,54 +89,60 @@ def predict_text(text, model, vectorizer, stemmer, list_stopwords):
     return prediction[0], cleaned_text
 
 # --- 4. Antarmuka Streamlit (Main App) ---
-st.title("📧 Detektor Spam Pesan Bahasa Indonesia")
-st.markdown("---")
+col1, col2, col3 = app.columns(3)
+
+with col2:
+    app.image(
+        "https://plai.ac.id/assets/images/logo/BMD-LOGO.webp",
+        width=900
+    )
+
+app.title(
+    "Detektor Teks Spam Bahasa Indonesia",
+    text_alignment="center"
+)
+app.markdown("---")
 
 if model is not None and vectorizer is not None:
     # Area input teks (Lebar penuh karena diletakkan langsung di main content)
-    user_input = st.text_area("Masukkan Pesan di Sini:", 
+    user_input = app.text_area("Masukkan Pesan di Sini:", 
                               placeholder="Ketik pesan yang ingin Anda analisis (misal: Selamat! Anda memenangkan undian berhadiah).", 
-                              height=150)
+                              height=250)
 
-    # Pembagian kolom untuk tombol, hanya col1 yang digunakan untuk tombol
-    col1, col2 = st.columns([1, 4]) 
+    # Pembagian kolom untuk tombol, hanya col2 yang digunakan untuk tombol
+    col1, col2, col3 = app.columns([2, 1, 2]) 
     
-    # Variabel untuk menyimpan hasil prediksi agar bisa diakses di luar if st.button
+    # Variabel untuk menyimpan hasil prediksi agar bisa diakses di luar if app.button
     result = None
     cleaned_text = ""
     
-    with col1:
-        if st.button("Analisis Pesan", use_container_width=True, type="primary"):
+    with col2:
+        if app.button("Analisis Pesan", use_container_width=True, type="primary"):
             if user_input:
-                # wordCount = len(user_input.split())
-
-                #if (wordCount < 5):
-                    #st.warning("Silakan masukkan teks lebih dari 5 kata")
-                #else:
-                    # Lakukan prediksi
-                    result, cleaned_text = predict_text(user_input, model, vectorizer, STEMMER, LIST_STOPWORDS)
+                result, cleaned_text = predict_text(user_input, model, vectorizer, STEMMER, LIST_STOPWORDS)
             else:
-                st.warning("Silakan masukkan teks pesan terlebih dahulu untuk dianalisis.")
+                app.warning("Silakan masukkan teks pesan terlebih dahulu untuk dianalisis.")
 
     # Tampilkan Hasil dan Expander di bawah kolom (Lebar Penuh)
     if user_input and result is not None:
-        st.subheader("Hasil Prediksi:")
+        app.subheader("Hasil Prediksi:")
         
         # Hasil 1 = Spam, Hasil 0 = Ham
         if result == 1:
-            st.error("🚨 SPAM 🚨", icon="🚫")
-            st.markdown("Pesan ini sangat mungkin adalah **pesan spam**.")
+            app.error("🚨 SPAM 🚨", icon="🚫")
+            app.markdown("Pesan ini sangat mungkin adalah **pesan spam**.")
         else:
-            st.success("✅ BUKAN SPAM (HAM) ✅", icon="⭐")
-            st.markdown("Pesan ini terdeteksi sebagai **pesan normal/valid**.")
+            app.success("✅ BUKAN SPAM (HAM) ✅", icon="⭐")
+            app.markdown("Pesan ini terdeteksi sebagai **pesan normal/non spam**.")
         
         # Expander untuk Detail Preprocessing (Akan menggunakan lebar penuh karena di luar kolom)
-        with st.expander("Lihat Detail Preprocessing"):
-            st.caption("Langkah-langkah yang dilakukan pada teks Anda sebelum diprediksi:")
-            st.code(cleaned_text, language='text')
+        with app.expander("Lihat Detail Preprocessing"):
+            app.caption("Langkah-langkah yang dilakukan pada teks Anda sebelum diprediksi:")
+            app.code(cleaned_text, language='text')
 
 else:
-    st.error("Aplikasi tidak dapat berjalan karena model atau vectorizer gagal dimuat. Cek file .joblib Anda.")
+    app.error("Aplikasi tidak dapat berjalan karena model atau vectorizer gagal dimuat. Cek file .joblib Anda.")
+
 
 
 
